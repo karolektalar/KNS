@@ -41,14 +41,19 @@ public class Game {
             random.nextInt(alphabet.length);
             word = prefix + alphabet[random.nextInt(alphabet.length)] + suffix;
             if(checkWinner(word, alphabet)) {
-                System.out.println("Przegrałeś");
+                System.out.println("Wygrałeś");
+                System.out.println("Naciśnij enter, aby zakończyć");
+                String tmp = in.nextLine();
                 return;
             }
 
 
         }
         System.out.println("Ostateczne słowo to: " + word);
-        System.out.println("Wygrałeś");
+        System.out.println("Przegrałeś");
+        System.out.println("Naciśnij enter, aby zakończyć");
+        Scanner in = new Scanner(System.in);
+        String tmp = in.nextLine();
     }
 
     private boolean checkWinner(String word, char[] alphabet) {

@@ -4,7 +4,14 @@ import com.google.common.collect.Multiset;
 import java.util.Random;
 import java.util.Scanner;
 
+
+
 public class Game {
+
+    public static final String ANSI_GREEN = "\u001B[32m";
+    public static final String ANSI_YELLOW = "\u001B[33m";
+    public static final String ANSI_RESET = "\u001B[0m";
+
     public void game(int maxLengthOfWord, char[] alphabet) {
         String word = "";
         System.out.println("Przekazany alfabet to: ");
@@ -41,7 +48,8 @@ public class Game {
             random.nextInt(alphabet.length);
             word = prefix + alphabet[random.nextInt(alphabet.length)] + suffix;
             if(checkWinner(word, alphabet)) {
-                System.out.println("Wygrałeś");
+//                System.out.println("Ostateczne słowo to: " + word);
+//                System.out.println("Wygrałeś");
                 System.out.println("Naciśnij enter, aby zakończyć");
                 String tmp = in.nextLine();
                 return;
@@ -57,8 +65,8 @@ public class Game {
     }
 
     private boolean checkWinner(String word, char[] alphabet) {
-        System.out.println("####################################################");
-        System.out.println("Sprawdzanie słowa: " + word);
+//        System.out.println("####################################################");
+//        System.out.println("Sprawdzanie słowa: " + word);
         //i mówi o początku słowa
         for (int i = 0; i < word.length(); i++) {
             //j mówi o długości słowa
@@ -72,10 +80,10 @@ public class Game {
                     for (int k = i + j; k < i + 2*j; k++) {
                         secondWord.add(String.valueOf(word.charAt(k)));
                     }
-                    System.out.println(firstWord);
-                    System.out.println(secondWord);
-                    System.out.println("####################################################");
                     if (firstWord.containsAll(secondWord)) {
+                        System.out.println("Wygrałeś");
+                        System.out.println("Ostateczne słowo to: " + word.substring(0, i) + ANSI_GREEN +  word.substring(i, i+j) + ANSI_YELLOW + word.substring(i+j, i + 2*j) + ANSI_RESET + word.substring(i + 2*j));
+                        System.out.println("Znalezioną abelową repetycją jest: " + word.substring(i, i+j) + " oraz " + word.substring(i+j, i + 2*j));
                         return true;
                     }
                 }

@@ -35,7 +35,7 @@ public class KNS {
                 System.out.println("Złe dane wejściowe, długość alfabetu powinna być dodatnią liczbą naturalną, mniejszą od 50");
                 return;
             }
-            if (alphabetLength < 1 || alphabetLength > 49) {
+            if (alphabetLength < 1 || alphabetLength > 50) {
                 System.out.println("Złe dane wejściowe, długość alfabetu powinna być dodatnią liczbą naturalną, mniejszą od 50");
                 return;
             }

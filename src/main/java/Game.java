@@ -1,8 +1,13 @@
+import com.diogonunes.jcolor.Ansi;
+import com.diogonunes.jcolor.AnsiFormat;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 
 import java.util.Random;
 import java.util.Scanner;
+
+import static com.diogonunes.jcolor.Ansi.colorize;
+import static com.diogonunes.jcolor.Attribute.*;
 
 
 public class Game {
@@ -86,11 +91,11 @@ public class Game {
         }
 
         if (depth < 5) {
-            System.out.println("Zmniejszenie głębokości");
+//            System.out.println("Zmniejszenie głębokości");
             return bruteForce(word, positionNumber, alphabet, depth + 1);
         }
         else {
-            System.out.println("Random choice");
+//            System.out.println("Random choice");
             return randomTactics(word, positionNumber, alphabet);
         }
     }
@@ -197,7 +202,7 @@ public class Game {
                     if (firstWord.equals(secondWord)) {
                         if (print) {
                             System.out.println("Wygrałeś");
-                            System.out.println("Ostateczne słowo to: " + word.substring(0, i) + ANSI_GREEN + word.substring(i, i + j) + ANSI_YELLOW + word.substring(i + j, i + 2 * j) + ANSI_RESET + word.substring(i + 2 * j));
+                            System.out.println("Ostateczne słowo to: " + word.substring(0, i) + "|# " + word.substring(i, i + j)+ " #|" + "|# " + word.substring(i + j, i + 2 * j) + " #|" + word.substring(i + 2 * j));
                             System.out.println("Znalezioną abelową repetycją jest: " + word.substring(i, i + j) + " oraz " + word.substring(i + j, i + 2 * j));
                         }
                         return true;

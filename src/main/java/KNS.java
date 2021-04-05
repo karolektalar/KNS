@@ -50,10 +50,36 @@ public class KNS {
             else alphabet[i] = (char) (i + 72);
         }
 
+        System.out.println("Wybierz przeciwnika");
+        System.out.println("1) Przeciwnik losowy");
+        System.out.println("2) Przeciwnik brute force");
+        System.out.println("3) Przeciwnik heurystyczny");
+        line = in.nextLine();
+        int opponent = 0;
+        if (line != null) {
+            try {
+                opponent = Integer.parseInt(line);
+            } catch (NumberFormatException e) {
+                System.out.println("Złe dane wejściowe, żeby wybrać przeciwnika podaj liczbę z odpowiedniego zakresu");
+                return;
+            }
+            if (opponent < 1 || opponent > 3) {
+                System.out.println("Złe dane wejściowe, żeby wybrać przeciwnika podaj liczbę z odpowiedniego zakresu");
+                return;
+            }
+            if (opponent == 1)
+                System.out.println("Wybrano przeciwnika losowego");
+            if (opponent == 2)
+                System.out.println("Wybrano przeciwnika brue force");
+            if (opponent == 3) {
+                System.out.println("Wybrano przeciwnika heurystycznego");
+            }
+        }
+
         Game game = new Game();
 
 
-        game.game(maxLengthOfWord, alphabet);
+        game.game(maxLengthOfWord, alphabet, opponent);
     }
 }
 

@@ -5,14 +5,13 @@ import java.util.Random;
 import java.util.Scanner;
 
 
-
 public class Game {
 
     public static final String ANSI_GREEN = "\u001B[32m";
     public static final String ANSI_YELLOW = "\u001B[33m";
     public static final String ANSI_RESET = "\u001B[0m";
 
-    public void game(int maxLengthOfWord, char[] alphabet) {
+    public void game(int maxLengthOfWord, char[] alphabet, int opponent) {
         String word = "";
         System.out.println("Przekazany alfabet to: ");
         for (int i = 0; i < alphabet.length; i++) {
@@ -42,14 +41,16 @@ public class Game {
                 System.out.println("Wybrana pozycja musi być liczbą z zakresu 0 - " + (word.length() + 1));
                 continue;
             }
-            String prefix = word.substring(0, positionNumber - 1);
-            String suffix = word.substring(positionNumber - 1);
-            Random random = new Random();
-            random.nextInt(alphabet.length);
-            word = prefix + alphabet[random.nextInt(alphabet.length)] + suffix;
-            if(checkWinner(word, alphabet)) {
-//                System.out.println("Ostateczne słowo to: " + word);
-//                System.out.println("Wygrałeś");
+
+            if (opponent == 1)
+                word = randomTactics(word, positionNumber, alphabet);
+
+            if (opponent == 2)
+                word = bruteForce(word, positionNumber, alphabet, 0);
+            if (opponent == 3)
+                word = heuristics(word, positionNumber, alphabet);
+
+            if (checkWinner(word, true)) {
                 System.out.println("Naciśnij enter, aby zakończyć");
                 String tmp = in.nextLine();
                 return;
@@ -64,26 +65,141 @@ public class Game {
         String tmp = in.nextLine();
     }
 
-    private boolean checkWinner(String word, char[] alphabet) {
-//        System.out.println("####################################################");
-//        System.out.println("Sprawdzanie słowa: " + word);
-        //i mówi o początku słowa
+    private String randomTactics(String word, int positionNumber, char[] alphabet) {
+        String prefix = word.substring(0, positionNumber - 1);
+        String suffix = word.substring(positionNumber - 1);
+        Random random = new Random();
+        random.nextInt(alphabet.length);
+        word = prefix + alphabet[random.nextInt(alphabet.length)] + suffix;
+        return word;
+    }
+
+    private String bruteForce(String word, int positionNumber, char[] alphabet, int depth) {
+        String tmpWord = "";
+        for (char c : alphabet) {
+            String prefix = word.substring(0, positionNumber - 1);
+            String suffix = word.substring(positionNumber - 1);
+            tmpWord = prefix + c + suffix;
+            if (bruteForceRecursion(tmpWord, alphabet, depth + 1)) {
+                return tmpWord;
+            }
+        }
+
+        if (depth < 5) {
+            System.out.println("Zmniejszenie głębokości");
+            return bruteForce(word, positionNumber, alphabet, depth + 1);
+        }
+        else {
+            System.out.println("Random choice");
+            return randomTactics(word, positionNumber, alphabet);
+        }
+    }
+
+    private boolean bruteForceRecursion(String word, char[] alphabet, int depth) {
+        boolean shouldReturn = true;
+        if (depth < 6) {
+            String tmpWord = "";
+            for (char c : alphabet) {
+                shouldReturn = true;
+                for (int i = 1; i < word.length() + 1; i++) {
+                    String prefix = word.substring(0, i - 1);
+                    String suffix = word.substring(i - 1);
+                    tmpWord = prefix + c + suffix;
+                    if (shouldReturn) {
+                        if (checkWinner(word, false)) {
+                            shouldReturn = false;
+                        } else {
+                            if (!bruteForceRecursion(tmpWord, alphabet, depth + 1)) {
+                                shouldReturn = false;
+                            }
+                        }
+                    }
+                }
+                if (shouldReturn) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        return true;
+    }
+
+    private String heuristics(String word,  int positionNumber, char[] alphabet) {
+        String maxWord = word;
+        String tmpWord;
+        int maxHeuristics = 0;
+        String prefix = word.substring(0, positionNumber - 1);
+        String suffix = word.substring(positionNumber - 1);
+        for (char c : alphabet) {
+            tmpWord = prefix + c + suffix;
+            int tmpHeuristics = countHeuristics(tmpWord);
+            if (tmpHeuristics > maxHeuristics) {
+                    maxHeuristics = tmpHeuristics;
+                    maxWord = tmpWord;
+            }
+        }
+        if (maxWord.equals(word)) {
+            return prefix + alphabet[0] + suffix;
+        }
+        return maxWord;
+    }
+
+    private int countHeuristics(String word) {
+        int minDifference = word.length();
         for (int i = 0; i < word.length(); i++) {
-            //j mówi o długości słowa
-            for (int j = 1; j < word.length()/2 + 1; j++) {
-                if (j*2 + i <= word.length()) {
+            for (int j = 1; j < word.length() / 2 + 1; j++) {
+                if (j * 2 + i <= word.length()) {
+                    int tmpDifference = 0;
                     Multiset<String> firstWord = HashMultiset.create();
                     Multiset<String> secondWord = HashMultiset.create();
                     for (int k = i; k < i + j; k++) {
                         firstWord.add(String.valueOf(word.charAt(k)));
                     }
-                    for (int k = i + j; k < i + 2*j; k++) {
+                    for (int k = i + j; k < i + 2 * j; k++) {
                         secondWord.add(String.valueOf(word.charAt(k)));
                     }
-                    if (firstWord.containsAll(secondWord)) {
-                        System.out.println("Wygrałeś");
-                        System.out.println("Ostateczne słowo to: " + word.substring(0, i) + ANSI_GREEN +  word.substring(i, i+j) + ANSI_YELLOW + word.substring(i+j, i + 2*j) + ANSI_RESET + word.substring(i + 2*j));
-                        System.out.println("Znalezioną abelową repetycją jest: " + word.substring(i, i+j) + " oraz " + word.substring(i+j, i + 2*j));
+                    for (String c: firstWord) {
+                        if (secondWord.contains(c)){
+                            if (j == 1) {
+                                return 0;
+                            }
+                            secondWord.remove(c, 1);
+                        } else {
+                            tmpDifference++;
+                        }
+                    }
+
+                    if (tmpDifference < minDifference) {
+                        minDifference = tmpDifference;
+                    }
+                }
+            }
+        }
+        return minDifference;
+    }
+
+    private boolean checkWinner(String word, boolean print) {
+//        System.out.println("####################################################");
+//        System.out.println("Sprawdzanie słowa: " + word);
+        //i mówi o początku słowa
+        for (int i = 0; i < word.length(); i++) {
+            //j mówi o długości słowa
+            for (int j = 1; j < word.length() / 2 + 1; j++) {
+                if (j * 2 + i <= word.length()) {
+                    Multiset<String> firstWord = HashMultiset.create();
+                    Multiset<String> secondWord = HashMultiset.create();
+                    for (int k = i; k < i + j; k++) {
+                        firstWord.add(String.valueOf(word.charAt(k)));
+                    }
+                    for (int k = i + j; k < i + 2 * j; k++) {
+                        secondWord.add(String.valueOf(word.charAt(k)));
+                    }
+                    if (firstWord.equals(secondWord)) {
+                        if (print) {
+                            System.out.println("Wygrałeś");
+                            System.out.println("Ostateczne słowo to: " + word.substring(0, i) + ANSI_GREEN + word.substring(i, i + j) + ANSI_YELLOW + word.substring(i + j, i + 2 * j) + ANSI_RESET + word.substring(i + 2 * j));
+                            System.out.println("Znalezioną abelową repetycją jest: " + word.substring(i, i + j) + " oraz " + word.substring(i + j, i + 2 * j));
+                        }
                         return true;
                     }
                 }

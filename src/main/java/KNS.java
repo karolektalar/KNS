@@ -2,10 +2,42 @@ import java.io.*;
 import java.util.Scanner;
 
 public class KNS {
+    public static boolean PLAY_AUTO = false;
+    public static int AUTO_MAX_WORD_LENGTH = 300;
+    public static int AUTO_ALPHABET_SIZE = 7;
+    public static int AUTO_OPPONENT = 3;
+    public static int AUTO_NUMBER_OF_GAMES = 10;
 
     public static void main(String[] args) {
+        if (PLAY_AUTO) {
+            int wins = 0;
+            int losses = 0;
+            int sumOfLosses = 0;
+            for (int gameNumber = 0; gameNumber < AUTO_NUMBER_OF_GAMES; gameNumber++) {
+                char[] autoAlphabet = new char[AUTO_ALPHABET_SIZE];
+                for (int i = 0; i < AUTO_ALPHABET_SIZE; i++) {
+                    if (i < 25)
+                        autoAlphabet[i] = (char) (i + 65);
+                    else autoAlphabet[i] = (char) (i + 72);
+                }
+
+                Game game = new Game();
+                int result = game.game(AUTO_MAX_WORD_LENGTH, autoAlphabet, AUTO_OPPONENT, true);
+                if (result == 1) {
+                    wins++;
+                }
+                else {
+                    losses++;
+                    sumOfLosses += result;
+                }
+            }
+            System.out.println("Gier wygranych przez komputer heurystyczny: " + wins);
+            System.out.println("Wynik średni gier przegranych: " + (sumOfLosses/losses));
+        }
+
         int maxLengthOfWord;
         int alphabetLength;
+
 
         ClassLoader classLoader = KNS.class.getClassLoader();
         Scanner in = new Scanner(System.in);
@@ -79,7 +111,7 @@ public class KNS {
         Game game = new Game();
 
 
-        game.game(maxLengthOfWord, alphabet, opponent);
+        game.game(maxLengthOfWord, alphabet, opponent, false);
     }
 }
 

@@ -1,20 +1,11 @@
-import com.diogonunes.jcolor.Ansi;
-import com.diogonunes.jcolor.AnsiFormat;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 
+import java.util.Arrays;
 import java.util.Random;
 import java.util.Scanner;
 
-import static com.diogonunes.jcolor.Ansi.colorize;
-import static com.diogonunes.jcolor.Attribute.*;
-
-
 public class Game {
-
-    public static final String ANSI_GREEN = "\u001B[32m";
-    public static final String ANSI_YELLOW = "\u001B[33m";
-    public static final String ANSI_RESET = "\u001B[0m";
 
     public int game(int maxLengthOfWord, char[] alphabet, int opponent, boolean auto) {
         String word = "";
@@ -68,6 +59,8 @@ public class Game {
                 word = bruteForce(word, positionNumber, alphabet, 0);
             if (opponent == 3)
                 word = heuristics(word, positionNumber, alphabet);
+            if (opponent == 4)
+                word = heuristicsSum(word, positionNumber, alphabet);
 
             if (checkWinner(word, !auto)) {
                 if (!auto) {
@@ -83,9 +76,6 @@ public class Game {
         if (!auto) {
             System.out.println("Ostateczne słowo to: " + word);
             System.out.println("Przegrałeś");
-            System.out.println("Naciśnij enter, aby zakończyć");
-            Scanner in = new Scanner(System.in);
-            String tmp = in.nextLine();
         }
         return 1;
     }
@@ -111,11 +101,9 @@ public class Game {
         }
 
         if (depth < 5) {
-//            System.out.println("Zmniejszenie głębokości");
             return bruteForce(word, positionNumber, alphabet, depth + 1);
         } else {
-//            System.out.println("Random choice");
-            return randomTactics(word, positionNumber, alphabet);
+            return heuristicsSum(word, positionNumber, alphabet);
         }
     }
 
@@ -158,7 +146,7 @@ public class Game {
         String suffix = word.substring(positionNumber - 1);
         for (char c : alphabet) {
             tmpWord = prefix + c + suffix;
-            int[] tmpHeuristics = countHeuristics(tmpWord);
+            int[] tmpHeuristics = countHeuristics(tmpWord, positionNumber);
 
             if (compareResults(tmpHeuristics, maxHeuristics)) {
                 maxHeuristics = tmpHeuristics;
@@ -171,14 +159,37 @@ public class Game {
         return maxWord;
     }
 
-    private int[] countHeuristics(String word) {
+    private String heuristicsSum(String word, int positionNumber, char[] alphabet) {
+        String maxWord = word;
+        String tmpWord;
+        int maxHeuristics = 0;
+        String prefix = word.substring(0, positionNumber - 1);
+        String suffix = word.substring(positionNumber - 1);
+        for (char c : alphabet) {
+            tmpWord = prefix + c + suffix;
+            int[] tmpHeuristics = countHeuristics(tmpWord, positionNumber);
+
+            if (compareResults(tmpHeuristics, maxHeuristics)) {
+                maxHeuristics = Arrays.stream(tmpHeuristics).sum();
+                maxWord = tmpWord;
+            }
+        }
+        if (maxWord.equals(word)) {
+            return prefix + alphabet[0] + suffix;
+        }
+        return maxWord;
+    }
+
+    private int[] countHeuristics(String word, int positionNumber) {
         int[] minDifferenceArray = new int[word.length()];
         for (int i = 0; i < word.length(); i++) {
             minDifferenceArray[i] = word.length();
         }
-        for (int i = 0; i < word.length(); i++) {
+        for (int i = 0; i < positionNumber + 1; i++) {
             if (word.length() > 1) {
                 for (int j = 1; j * 2 + i <= word.length(); j++) {
+                    if (i + 2 * j + 1 < positionNumber)
+                       continue;
                     int tmpDifference = 0;
                     Multiset<String> firstWord = HashMultiset.create();
                     Multiset<String> secondWord = HashMultiset.create();
@@ -218,6 +229,15 @@ public class Game {
                 return false;
         }
         return false;
+    }
+
+    private boolean compareResults(int[] candidate, int maxResult) {
+        for (int i = 1; i < candidate.length; i++) {
+            if (candidate[i] == 0) {
+                return false;
+            }
+        }
+        return Arrays.stream(candidate).sum() > maxResult;
     }
 
     private boolean checkWinner(String word, boolean print) {
